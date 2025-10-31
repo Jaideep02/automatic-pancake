@@ -60,7 +60,7 @@ if [[ -d "$GOAD_DIR" ]]; then
   mv "$GOAD_DIR" "${GOAD_DIR}_OLD_$(date +%s)"
 fi
 log "Cloning GOAD repository..."
-git clone https://github.com/Orange-Cyberdefense/GOAD.git "$GOAD_DIR" || err "Git clone failed"
+git clone https://github.com/Jaideep02/GOAD.git "$GOAD_DIR" || err "Git clone failed"
 
 # --- Set up Python virtual environment ---
 log "Creating Python virtual environment..."
