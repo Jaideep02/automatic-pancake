@@ -70,7 +70,7 @@ source "$GOAD_DIR/.venv/bin/activate"
 # --- Install Python requirements ---
 log "Installing Python dependencies..."
 python3 -m pip install --upgrade pip setuptools wheel || err "Pip upgrade failed"
-python3 -m pip install -r "$GOAD_DIR/requirements.txt" || err "Python dependencies failed"
+python3 -m pip install -r "$GOAD_DIR/requirements.yml" || err "Python dependencies failed"
 
 # --- Install GOAD-Light lab ---
 log "Starting GOAD-Light deployment..."
