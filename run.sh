@@ -2,7 +2,6 @@
 # =========================================================
 # install_goad_light.sh
 # Automated installer for GOAD-Light (VirtualBox + Vagrant)
-# Author: Jaideep (customized by ChatGPT)
 # =========================================================
 
 set -euo pipefail
@@ -25,9 +24,26 @@ fi
 log "Updating package lists..."
 apt update -y && apt upgrade -y
 
-# --- Install dependencies ---
-log "Installing dependencies (curl, wget, git, python3, pip, etc.)..."
-apt install -y curl wget git python3 python3-venv python3-pip gpg software-properties-common || err "Dependency install failed"
+# --- Install core dependencies ---
+log "Installing dependencies (curl, wget, git, python3.11, pip, etc.)..."
+apt install -y curl wget git gpg software-properties-common || err "Core dependency install failed"
+
+# --- Install Python 3.11 and tools ---
+if ! command -v python3.11 &>/dev/null; then
+  log "Installing Python 3.11..."
+  add-apt-repository -y ppa:deadsnakes/ppa
+  apt update
+  apt install -y python3.11 python3.11-venv python3.11-distutils || err "Python 3.11 installation failed"
+else
+  ok "Python 3.11 already installed."
+fi
+
+# Ensure pip for Python 3.11
+if ! python3.11 -m pip --version &>/dev/null; then
+  log "Installing pip for Python 3.11..."
+  curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11 || err "Pip installation for Python 3.11 failed"
+fi
+ok "Python 3.11 and pip ready."
 
 # --- Install VirtualBox ---
 if ! command -v VBoxManage &> /dev/null; then
@@ -62,30 +78,29 @@ fi
 log "Cloning GOAD repository..."
 git clone https://github.com/Jaideep02/GOAD.git "$GOAD_DIR" || err "Git clone failed"
 
-# --- Set up Python virtual environment ---
-log "Creating Python virtual environment..."
-python3 -m venv "$GOAD_DIR/.venv" || err "Virtualenv creation failed"
+# --- Set up Python 3.11 virtual environment ---
+log "Creating Python 3.11 virtual environment..."
+python3.11 -m venv "$GOAD_DIR/.venv" || err "Virtualenv creation failed"
 source "$GOAD_DIR/.venv/bin/activate"
 
 # --- Install Python requirements ---
 log "Installing Python dependencies..."
-python3 -m pip install --upgrade pip setuptools wheel || err "Pip upgrade failed"
-python3 -m pip install -r "$GOAD_DIR/requirements.yml" || err "Python dependencies failed"
+python3.11 -m pip install --upgrade pip setuptools wheel || err "Pip upgrade failed"
+
+REQ_FILE="$GOAD_DIR/requirements.txt"
+if [[ ! -f "$REQ_FILE" ]]; then
+  # fallback if repo uses requirements.yml
+  REQ_FILE="$GOAD_DIR/requirements.yml"
+fi
+
+python3.11 -m pip install -r "$REQ_FILE" || err "Python dependencies failed"
 
 # --- Install GOAD-Light lab ---
 log "Starting GOAD-Light deployment..."
 cd "$GOAD_DIR"
-
-# The arguments here match goad.py -> parse_args()
-# -t install  → performs installation
-# -l GOAD-Light → chooses the light lab
-# -p virtualbox → provider
-# -m local → deploys locally on this machine
-# --noninteractive doesn’t exist in this version, so we use yes | to auto-confirm prompts
-yes | python3 goad.py -t install -l "GOAD-Light" -p virtualbox -m local || err "GOAD-Light installation failed"
+yes | python3.11 goad.py -t install -l "GOAD-Light" -p virtualbox -m local || err "GOAD-Light installation failed"
 
 # --- Done ---
 ok "GOAD-Light lab successfully deployed!"
-ok "To start your lab later: cd $GOAD_DIR && python3 goad.py -t start -l GOAD-Light"
+ok "To start your lab later: cd $GOAD_DIR && source .venv/bin/activate && python3.11 goad.py -t start -l GOAD-Light"
 ok "Installation complete. Log saved at: $LOGFILE"
-
