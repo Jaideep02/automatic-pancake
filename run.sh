@@ -75,9 +75,17 @@ python3 -m pip install -r "$GOAD_DIR/requirements.yml" || err "Python dependenci
 # --- Install GOAD-Light lab ---
 log "Starting GOAD-Light deployment..."
 cd "$GOAD_DIR"
-yes | python3 goad.py install --lab "GOAD-Light" --provider virtualbox --noninteractive || err "GOAD-Light installation failed"
+
+# The arguments here match goad.py -> parse_args()
+# -t install  → performs installation
+# -l GOAD-Light → chooses the light lab
+# -p virtualbox → provider
+# -m local → deploys locally on this machine
+# --noninteractive doesn’t exist in this version, so we use yes | to auto-confirm prompts
+yes | python3 goad.py -t install -l "GOAD-Light" -p virtualbox -m local || err "GOAD-Light installation failed"
 
 # --- Done ---
 ok "GOAD-Light lab successfully deployed!"
-ok "To start your lab later: cd $GOAD_DIR && ./goad.sh start"
+ok "To start your lab later: cd $GOAD_DIR && python3 goad.py -t start -l GOAD-Light"
 ok "Installation complete. Log saved at: $LOGFILE"
+
