@@ -64,18 +64,18 @@ git clone https://github.com/Jaideep02/GOAD.git "$GOAD_DIR" || err "Git clone fa
 
 # --- Set up Python virtual environment ---
 log "Creating Python virtual environment..."
-python3 -m venv /home/mahe/.goad/.venv || err "Virtualenv creation failed"
-source /home/mahe/.goad/.venv/bin/activate
+python3 -m venv "$GOAD_DIR/.venv" || err "Virtualenv creation failed"
+source "$GOAD_DIR/.venv/bin/activate"
 
 # --- Install Python requirements ---
 log "Installing Python dependencies..."
 python3 -m pip install --upgrade pip setuptools wheel || err "Pip upgrade failed"
-python3 -m pip install -r "$GOAD_DIR/requirements.yml" || err "Python dependencies failed"
+python3 -m pip install -r "$GOAD_DIR/requirements.txt" || err "Python dependencies failed"
 
 # --- Install GOAD-Light lab ---
 log "Starting GOAD-Light deployment..."
 cd "$GOAD_DIR"
-yes | python3 goad.py -t install -l "GOAD-Light" -p virtualbox -ip "192.168.56.X" || err "GOAD-Light installation failed"
+yes | python3 goad.py install --lab "GOAD-Light" --provider virtualbox --noninteractive || err "GOAD-Light installation failed"
 
 # --- Done ---
 ok "GOAD-Light lab successfully deployed!"
